@@ -1,0 +1,12 @@
+{
+  "name": "Joystick Module",
+  "type": "modules",
+  "symbolType": "joystick-module",
+  "pins": [
+    { "name": "VCC", "x": 0.1, "y": 0 },
+    { "name": "GND", "x": 0.25, "y": 0 },
+    { "name": "VRx", "x": 0.4, "y": 0 },
+    { "name": "VRy", "x": 0.55, "y": 0 },
+    { "name": "SW", "x": 0.7, "y": 0 }
+  ]
+}

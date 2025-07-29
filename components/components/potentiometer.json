@@ -1,0 +1,13 @@
+{
+  "name": "Potentiometer",
+  "type": "components",
+  "symbolType": "potentiometer",
+  "variables": [
+    { "name": "Resistance", "unit": "Ω", "value": 10000, "min": 100, "max": 1000000, "step": 100 }
+  ],
+  "pins": [
+    { "name": "1", "x": 0, "y": 0.5 },
+    { "name": "Wiper", "x": 0.5, "y": 0 },
+    { "name": "2", "x": 1, "y": 0.5 }
+  ]
+}

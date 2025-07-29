@@ -1,0 +1,13 @@
+{
+  "name": "Battery",
+  "type": "components",
+  "symbolType": "battery",
+  "variables": [
+    { "name": "Voltage", "unit": "V", "value": 9, "min": 1.5, "max": 12 },
+    { "name": "Current", "unit": "A", "value": 1, "min": 0.1, "max": 5 }
+  ],
+  "pins": [
+    { "name":"Positive", "x":0.5, "y":0 },
+    { "name":"Negative", "x":0.5, "y":1 }
+  ]
+}

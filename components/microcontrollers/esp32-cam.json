@@ -1,0 +1,23 @@
+{
+  "name": "ESP32-CAM",
+  "type": "microcontrollers",
+  "symbolType": "microcontroller",
+  "pins": [
+    { "name": "GND", "x": 0, "y": 0.1 },
+    { "name": "GPIO0", "x": 0, "y": 0.2 },
+    { "name": "GPIO2", "x": 0, "y": 0.3 },
+    { "name": "GPIO4", "x": 0, "y": 0.4 },
+    { "name": "GPIO12", "x": 0, "y": 0.5 },
+    { "name": "GPIO13", "x": 0, "y": 0.6 },
+    { "name": "GPIO14", "x": 0, "y": 0.7 },
+    { "name": "GPIO15", "x": 0, "y": 0.8 },
+    { "name": "3V3", "x": 1, "y": 0.1 },
+    { "name": "5V", "x": 1, "y": 0.2 },
+    { "name": "GND", "x": 1, "y": 0.3 },
+    { "name": "U0TXD", "x": 1, "y": 0.4 },
+    { "name": "U0RXD", "x": 1, "y": 0.5 },
+    { "name": "GPIO1", "x": 1, "y": 0.6 },
+    { "name": "GPIO3", "x": 1, "y": 0.7 },
+    { "name": "GPIO16", "x": 1, "y": 0.8 }
+  ]
+}

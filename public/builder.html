@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Matrix Circuit Builder</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --grid-color: rgba(0, 150, 255, 0.4);
+            --glow-color: rgba(0, 200, 255, 0.5);
+            --sidebar-bg: #0d1117;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 40px;
+            --text-color: #c9d1d9;
+            --accent-color: #00aaff;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            height: 100%;
+            transition: left 0.3s ease, width 0.3s ease, right 0.3s ease;
+        }
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100%;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--grid-color);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            transition: width 0.3s ease;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        #sidebar.collapsed {
+            width: 0;
+            overflow: hidden;
+        }
+        #sidebar.collapsed #component-list, #sidebar.collapsed .sidebar-header h1, #sidebar.collapsed .sidebar-footer, #sidebar.collapsed #color-palette {
+            display: none;
+        }
+        #right-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: var(--sidebar-width);
+            height: 100%;
+            background-color: var(--sidebar-bg);
+            border-left: 1px solid var(--grid-color);
+            box-shadow: -2px 0 10px rgba(0,0,0,0.5);
+            transition: width 0.3s ease;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        #right-sidebar.collapsed {
+            width: 0;
+            overflow: hidden;
+        }
+        #right-sidebar.collapsed #code-file-list, #right-sidebar.collapsed #code-editor-area, #right-sidebar.collapsed .sidebar-header h1, #right-sidebar.collapsed .sidebar-footer {
+            display: none;
+        }
+        #right-sidebar .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-right: 15px; /* Adjust padding for button */
+        }
+        #right-sidebar .toggle-button {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0;
+        }
+        #code-file-list {
+            padding: 15px;
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--grid-color);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .code-file-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            background-color: #161b22;
+            border: 1px solid var(--grid-color);
+            border-radius: 5px;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .code-file-item.selected {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+        }
+        #code-editor-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+        #code-editor {
+            width: 100%;
+            flex-grow: 1;
+            background-color: #161b22;
+            border: 1px solid var(--grid-color);
+            color: var(--text-color);
+            padding: 10px;
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            resize: none;
+            box-sizing: border-box;
+        }
+        .sidebar-header, .sidebar-footer, #circuit-management-area, #properties-panel, #color-palette, #ai-chat-area, #circuit-json-area {
+            padding: 15px;
+            flex-shrink: 0; /* Prevent these sections from shrinking */
+        }
+        .sidebar-header {
+            padding-bottom: 0; /* Adjust padding for better spacing */
+        }
+        #circuit-management-area {
+            padding-top: 0; /* Adjust padding for better spacing */
+        }
+        .sidebar-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            color: var(--accent-color);
+        }
+
+        #component-search {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            background-color: #161b22;
+            border: 1px solid var(--grid-color);
+            color: var(--text-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .component-category h2 {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #161b22;
+            border: 1px solid var(--grid-color);
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .component-category .component-container {
+            display: none;
+            padding-left: 10px;
+        }
+
+        .component-category.open .component-container {
+            display: block;
+        }
+        #component-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 15px;
+            min-height: 250px; /* Ensure a minimum height for the component list */
+        }
+        .component-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #161b22;
+            border: 1px solid var(--grid-color);
+            border-radius: 5px;
+            cursor: grab;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #toggle-sidebar {
+            position: absolute;
+            top: 15px;
+            right: -20px;
+            width: 20px;
+            height: 40px;
+            background-color: var(--sidebar-bg);
+            border: 1px solid var(--grid-color);
+            border-left: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #color-palette {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+        }
+        .color-box {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .color-box.selected {
+            border-color: #fff;
+        }
+    #properties-panel {
+            padding: 15px;
+            border-top: 1px solid var(--grid-color);
+        }
+        .property {
+            margin-bottom: 10px;
+        }
+        .property label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .property input {
+            width: 100%;
+            background-color: #161b22;
+            border: 1px solid var(--grid-color);
+            color: var(--text-color);
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .sidebar-footer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 10px;
+            gap: 10px;
+        }
+
+        .sidebar-footer button {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            background-color: #0d1117;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar-footer button:hover {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0077cc;
+        }
+
+        #ai-chat-area {
+            padding: 15px;
+            border-top: 1px solid var(--grid-color);
+            flex-shrink: 0;
+        }
+
+        #ai-chat-output {
+            height: 100px;
+            overflow-y: auto;
+            background-color: #161b22;
+            border: 1px solid var(--grid-color);
+            padding: 5px;
+            margin-bottom: 10px;
+            font-size: 0.8em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        #ai-chat-input {
+            width: calc(100% - 10px);
+            padding: 5px;
+            background-color: #161b22;
+            border: 1px solid var(--grid-color);
+            color: var(--text-color);
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+
+        #send-ai-message, #wire-with-ai {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--accent-color);
+            border: none;
+            color: var(--bg-color);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+
+        #send-ai-message:hover, #wire-with-ai:hover {
+            background-color: #0077cc;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h1>Components</h1>
+            <input type="text" id="component-search" placeholder="Search components...">
+        </div>
+        <div id="circuit-management-area">
+            <h3>Circuits</h3>
+            <select id="circuit-selector"></select>
+            <button id="load-circuit-btn">Load</button>
+            <button id="merge-selected-circuit-btn">Merge Selected</button>
+            <button id="new-circuit-btn">New Circuit</button>
+        </div>
+        <div id="component-list"></div>
+        <div id="properties-panel"></div>
+        <div id="color-palette">
+            <div class="color-box selected" style="background-color: #00aaff;" data-color="#00aaff"></div>
+            <div class="color-box" style="background-color: #ff0000;" data-color="#ff0000"></div>
+            <div class="color-box" style="background-color: #00ff00;" data-color="#00ff00"></div>
+            <div class="color-box" style="background-color: #ffff00;" data-color="#ffff00"></div>
+            <div class="color-box" style="background-color: #ffffff;" data-color="#ffffff"></div>
+        </div>
+        <div id="ai-chat-area">
+            <h3>AI Assistant</h3>
+            <div id="ai-chat-output"></div>
+            <input type="text" id="ai-chat-input" placeholder="Ask AI...">
+            <button id="send-ai-message">Send</button>
+            <button id="wire-with-ai">Wire with AI</button>
+        </div>
+        <div id="circuit-json-area">
+            <h3>Circuit JSON <span id="toggle-circuit-json" style="cursor: pointer;">▼</span></h3>
+            <pre id="circuit-json-output" style="display: none; height: 200px; overflow-y: scroll; background-color: #161b22; border: 1px solid var(--grid-color); padding: 5px; font-size: 0.7em;"></pre>
+        </div>
+        <div class="sidebar-footer">
+            <button onclick="saveCircuit()" title="Save Circuit">💾</button>
+            <button onclick="exportNetlist()" title="Export Netlist">📄</button>
+            <button onclick="openCircuitFolder()" title="Open Circuit Folder">📂</button>
+            <button onclick="generateAndOpenKiCad()" title="Open in KiCad">🛠️</button>
+            <button onclick="location.href='/add-component.html'" title="Add Component">➕</button>
+            <button onclick="location.href='/gallery.html'" title="Gallery">🖼️</button>
+            <button onclick="rerouteWires()" title="Reroute Wires">🔀</button>
+        </div>
+        <div id="toggle-sidebar">&lt;</div>
+    </div>
+    <canvas id="canvas"></canvas>
+
+    <!-- Right Sidebar for Code Editor -->
+    <div id="right-sidebar" class="collapsed">
+        <div class="sidebar-header">
+            <h1>Code Editor</h1>
+            <button id="toggle-right-sidebar" class="toggle-button">&gt;</button>
+        </div>
+        <div id="code-file-list">
+            <!-- File list will be populated here -->
+        </div>
+        <div id="code-editor-area">
+            <textarea id="code-editor" spellcheck="false"></textarea>
+        </div>
+        <div class="sidebar-footer">
+            <button id="save-code-btn" title="Save Code">💾</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const sidebar = document.getElementById('sidebar');
+        const toggleSidebar = document.getElementById('toggle-sidebar');
+        const componentList = document.getElementById('component-list');
+        const colorPalette = document.getElementById('color-palette');
+        const aiChatOutput = document.getElementById('ai-chat-output');
+        const aiChatInput = document.getElementById('ai-chat-input');
+        const sendAiMessageBtn = document.getElementById('send-ai-message');
+        const wireWithAiBtn = document.getElementById('wire-with-ai');
+        const circuitSelector = document.getElementById('circuit-selector');
+        const newCircuitBtn = document.getElementById('new-circuit-btn');
+        const loadCircuitBtn = document.getElementById('load-circuit-btn');
+        const mergeSelectedCircuitBtn = document.getElementById('merge-selected-circuit-btn');
+        const circuitJsonOutput = document.getElementById('circuit-json-output');
+        const toggleCircuitJson = document.getElementById('toggle-circuit-json');
+        const rightSidebar = document.getElementById('right-sidebar');
+        const toggleRightSidebar = document.getElementById('toggle-right-sidebar');
+        const codeFileList = document.getElementById('code-file-list');
+        const codeEditor = document.getElementById('code-editor');
+        const saveCodeBtn = document.getElementById('save-code-btn');
+
+        let pinConfig = {};
+        let nodes = [];
+        let connections = [];
+        let circuitId = null;
+        let circuitName = "New Circuit"; // Store circuit name
+        let circuitAssetFolder = ""; // Store asset folder name
+        let currentOpenFile = null; // Track the currently open code file
+
+        // Function to load a circuit by ID
+        async function loadCircuit(id) {
+            console.log(`Attempting to load circuit with ID: ${id}`);
+            try {
+                const response = await fetch(`/api/circuits/${id}`);
+                if (response.ok) {
+                    const circuit = await response.json();
+                    console.log('Circuit data received:', circuit);
+                    nodes = (circuit.nodes || []).map(n => {
+                        const componentConfig = pinConfig[n.name] || pinConfig[n.type];
+                        return {
+                            ...n,
+                            fullPins: componentConfig ? componentConfig.pins : [] // Ensure componentConfig exists
+                        };
+                    });
+
+                    connections = circuit.connections || [];
+                    circuitId = circuit.id;
+                    circuitName = circuit.name || "New Circuit";
+                    circuitAssetFolder = circuit.assetFolder || "";
+                    // If loading an existing circuit, ensure selectedNode is cleared and properties panel is updated
+                    selectedNode = null;
+                    updatePropertiesPanel();
+                    pushState();
+                    window.history.pushState({ circuitId: circuit.id }, '', `builder.html?circuitId=${circuit.id}`);
+                } else {
+                    alert('Circuit not found or error loading.');
+                }
+            } catch (error) {
+                console.error('Error loading circuit:', error);
+                alert('Failed to load circuit.');
+            }
+        }
+
+        // Check for circuitId in URL on page load
+        // This section is now handled within the component loading promise
+        // const urlParams = new URLSearchParams(window.location.search);
+        // const initialCircuitId = urlParams.get('circuitId');
+        // if (initialCircuitId) {
+        //     loadCircuit(initialCircuitId);
+        // } else {
+        //     // If no circuitId in URL, load the list of circuits
+        //     loadCircuitList();
+        // }
+
+        // Function to load the list of circuits
+        async function loadCircuitList() {
+            try {
+                const response = await fetch('/api/circuits');
+                if (response.ok) {
+                    const circuits = await response.json();
+                    console.log('Loaded circuits:', circuits); // Debugging line
+                    circuitSelector.innerHTML = '<option value="">-- Select Circuit --</option>';
+                    circuits.forEach(circuit => {
+                        const option = document.createElement('option');
+                        option.value = circuit.id;
+                        option.textContent = circuit.name;
+                        circuitSelector.appendChild(option);
+                    });
+                } else {
+                    console.error('Failed to load circuit list.');
+                }
+            } catch (error) {
+                console.error('Error loading circuit list:', error);
+            }
+        }
+
+        loadCircuitBtn.addEventListener('click', () => {
+            const selectedId = circuitSelector.value;
+            if (selectedId) {
+                loadCircuit(selectedId);
+            } else {
+                alert('Please select a circuit to load.');
+            }
+        });
+
+        mergeSelectedCircuitBtn.addEventListener('click', async () => {
+            const circuitToMergeId = circuitSelector.value;
+            if (!circuitToMergeId) {
+                alert('Please select a circuit to merge.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/circuits/${circuitToMergeId}`);
+                if (response.ok) {
+                    const mergedCircuit = await response.json();
+
+                    let offsetX = 0;
+                    let offsetY = 0;
+
+                    // Calculate bounding box of current circuit
+                    if (nodes.length > 0) {
+                        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                        nodes.forEach(n => {
+                            minX = Math.min(minX, n.x);
+                            maxX = Math.max(maxX, n.x + n.w);
+                            minY = Math.min(minY, n.y);
+                            maxY = Math.max(maxY, n.y + n.h);
+                        });
+
+                        const padding = GRID_SIZE * 5; // 5 grid units padding
+                        offsetX = snapToGrid(maxX + padding);
+                        offsetY = snapToGrid(minY); // Align tops
+                    }
+
+                    // Adjust merged circuit nodes and connections
+                    const newNodes = mergedCircuit.nodes.map(n => ({
+                        ...n,
+                        x: snapToGrid(n.x + offsetX),
+                        y: snapToGrid(n.y + offsetY)
+                    }));
+
+                    const newConnections = mergedCircuit.connections.map(c => {
+                        const newPoints = (c.points || []).map(p => ({
+                            x: snapToGrid(p.x + offsetX),
+                            y: snapToGrid(p.y + offsetY)
+                        }));
+                        return { ...c, points: newPoints };
+                    });
+
+                    // Add new nodes and connections
+                    nodes.push(...newNodes);
+                    connections.push(...newConnections);
+
+                    pushState();
+                    draw();
+                    alert('Circuit merged successfully!');
+                } else {
+                    alert('Circuit to merge not found or error loading.');
+                }
+            } catch (error) {
+                console.error('Error merging circuit:', error);
+                alert('Failed to merge circuit.');
+            }
+        });
+
+        newCircuitBtn.addEventListener('click', () => {
+            nodes = [];
+            connections = [];
+            circuitId = null;
+            circuitName = "New Circuit";
+            circuitAssetFolder = "";
+            selectedNode = null;
+            updatePropertiesPanel();
+            pushState();
+            draw();
+            circuitSelector.value = ""; // Reset selector
+            updateCircuitJsonDisplay();
+            window.history.pushState({}, '', 'builder.html'); // Update URL for new circuit
+        });
+
+        // Function to update the circuit JSON display
+        function updateCircuitJsonDisplay() {
+            const circuitData = {
+                id: circuitId,
+                name: circuitName,
+                nodes: nodes,
+                connections: connections
+            };
+            circuitJsonOutput.textContent = JSON.stringify(circuitData, null, 2);
+        }
+
+        toggleCircuitJson.addEventListener('click', () => {
+            const isHidden = circuitJsonOutput.style.display === 'none';
+            circuitJsonOutput.style.display = isHidden ? 'block' : 'none';
+            toggleCircuitJson.textContent = isHidden ? '▼' : '▲';
+        });
+
+        // Call updateCircuitJsonDisplay whenever the circuit changes
+        const originalPushState = pushState;
+        pushState = function() {
+            originalPushState.apply(this, arguments);
+            updateCircuitJsonDisplay();
+        };
+
+        // Initial display of circuit JSON
+        updateCircuitJsonDisplay();
+
+        let dragging = null, dragOff = { x: 0, y: 0 };
+        let linkStart = null;
+        let transform = { x: 0, y: 0, scale: 1 };
+        let selectedNode = null;
+        let isPanning = false;
+        let panStart = { x: 0, y: 0 };
+        let selectedWireColor = '#00aaff';
+        let draggingPoint = null;
+
+        const GRID_SIZE = 20; // Define grid size
+
+        // Undo/Redo History
+        let history = [];
+        let historyPointer = -1;
+        const MAX_HISTORY = 50;
+
+        function pushState() {
+            if (historyPointer < history.length - 1) {
+                history = history.slice(0, historyPointer + 1);
+            }
+            history.push({ nodes: JSON.parse(JSON.stringify(nodes)), connections: JSON.parse(JSON.stringify(connections)) });
+            if (history.length > MAX_HISTORY) {
+                history.shift();
+            } else {
+                historyPointer++;
+            }
+        }
+
+        function applyState(state) {
+            nodes = JSON.parse(JSON.stringify(state.nodes));
+            connections = JSON.parse(JSON.stringify(state.connections));
+        }
+
+        function undo() {
+            if (historyPointer > 0) {
+                historyPointer--;
+                applyState(history[historyPointer]);
+            }
+        }
+
+        function redo() {
+            if (historyPointer < history.length - 1) {
+                historyPointer++;
+                applyState(history[historyPointer]);
+            }
+        }
+
+        // Matrix background effect
+        let columns, drops;
+        const fontSize = 16;
+        const chars = "0123456789ABCDEF";
+
+        function setupMatrix() {
+            canvas.width = window.innerWidth - (sidebar.classList.contains('collapsed') ? 40 : 250);
+            canvas.height = window.innerHeight;
+            columns = Math.floor(canvas.width / fontSize);
+            drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00aaff';
+            ctx.font = `${fontSize}px monospace`;
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        // --- Main Application Logic ---
+        function worldToScreen(x, y) {
+            return { x: x * transform.scale + transform.x, y: y * transform.scale + transform.y };
+        }
+
+        function screenToWorld(x, y) {
+            return { x: (x - transform.x) / transform.scale, y: (y - transform.y) / transform.scale };
+        }
+
+        function snapToGrid(value) {
+            return Math.round(value / GRID_SIZE) * GRID_SIZE;
+        }
+
+        function draw() {
+            requestAnimationFrame(draw);
+
+            // Clear the canvas for redrawing
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(transform.x, transform.y);
+            ctx.scale(transform.scale, transform.scale);
+
+            // Draw grid
+            ctx.strokeStyle = 'rgba(0, 150, 255, 0.1)';
+            ctx.lineWidth = 1 / transform.scale;
+            const startX = snapToGrid(-transform.x / transform.scale);
+            const startY = snapToGrid(-transform.y / transform.scale);
+            const endX = startX + canvas.width / transform.scale;
+            const endY = startY + canvas.height / transform.scale;
+
+            for (let x = startX; x < endX; x += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(x, startY);
+                ctx.lineTo(x, endY);
+                ctx.stroke();
+            }
+            for (let y = startY; y < endY; y += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(startX, y);
+                ctx.lineTo(endX, y);
+                ctx.stroke();
+            }
+
+            // Draw connections
+            ctx.lineWidth = 3 / transform.scale;
+            connections.forEach(c => {
+                const fromNode = nodes.find(n => n.id === c.from.nodeId);
+                const toNode = nodes.find(n => n.id === c.to.nodeId);
+                if (!fromNode || !toNode) return;
+                const fromPin = getPins(fromNode)[c.from.pinIdx];
+                const toPin = getPins(toNode)[c.to.pinIdx];
+                
+                ctx.strokeStyle = c.color || '#00aaff';
+                ctx.beginPath();
+                ctx.moveTo(fromPin.x, fromPin.y);
+                if (c.points) {
+                    c.points.forEach(p => ctx.lineTo(p.x, p.y));
+                }
+                ctx.lineTo(toPin.x, toPin.y);
+                ctx.stroke();
+
+                // Draw elbow points
+                if (c.points) {
+                    c.points.forEach(p => {
+                        ctx.fillStyle = '#ff00ff'; // Magenta for elbow points
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 5 / transform.scale, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+                }
+            });
+
+            // Draw nodes
+            nodes.forEach(n => {
+                drawComponentSymbol(ctx, n);
+
+                // Draw component name
+                ctx.fillStyle = '#c9d1d9';
+                ctx.font = `${14 / transform.scale}px Courier New`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(n.name || n.type, n.x + n.w / 2, n.y + n.h / 2);
+
+                // Draw pins
+                getPins(n).forEach(p => {
+                    ctx.beginPath();
+                    ctx.fillStyle = (linkStart && linkStart.node.id === n.id && linkStart.idx === p.idx) ? '#ff9800' : '#c9d1d9';
+                    ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI); // Reduced size to 4
+                    ctx.fill();
+                    
+                    // Draw pin name
+                    ctx.fillStyle = '#c9d1d9';
+                    ctx.font = `8px Courier New`; // Reduced font size to 8
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(p.name, p.x, p.y + 4 + 2);
+                });
+            });
+
+            ctx.restore();
+        }
+
+        // --- Event Handlers ---
+        toggleSidebar.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            document.body.classList.toggle('sidebar-collapsed');
+            const newLeft = sidebar.classList.contains('collapsed') ? '0px' : '250px';
+            const newWidth = `calc(100% - ${newLeft} - ${rightSidebar.classList.contains('collapsed') ? '0px' : '250px'})`;
+            canvas.style.left = newLeft;
+            canvas.style.width = newWidth;
+            setTimeout(setupMatrix, 300); // Recalculate matrix on transition end
+        });
+
+        toggleRightSidebar.addEventListener('click', () => {
+            rightSidebar.classList.toggle('collapsed');
+            const newRight = rightSidebar.classList.contains('collapsed') ? '0px' : '250px';
+            const newWidth = `calc(100% - ${sidebar.classList.contains('collapsed') ? '0px' : '250px'} - ${newRight})`;
+            canvas.style.width = newWidth;
+            setTimeout(setupMatrix, 300); // Recalculate matrix on transition end
+        });
+
+        colorPalette.addEventListener('click', e => {
+            if (e.target.classList.contains('color-box')) {
+                document.querySelectorAll('.color-box').forEach(b => b.classList.remove('selected'));
+                e.target.classList.add('selected');
+                selectedWireColor = e.target.dataset.color;
+            }
+        });
+
+        canvas.addEventListener('wheel', e => {
+            e.preventDefault();
+            const scaleAmount = 1.1;
+            const worldPos = screenToWorld(e.clientX - canvas.offsetLeft, e.clientY);
+
+            if (e.deltaY < 0) { // Zoom in
+                transform.scale *= scaleAmount;
+            } else { // Zoom out
+                transform.scale /= scaleAmount;
+            }
+
+            const newWorldPos = screenToWorld(e.clientX - canvas.offsetLeft, e.clientY);
+            transform.x += (newWorldPos.x - worldPos.x) * transform.scale;
+            transform.y += (newWorldPos.y - worldPos.y) * transform.scale;
+        });
+
+        canvas.addEventListener('pointerdown', e => {
+            const worldPos = screenToWorld(e.clientX - canvas.offsetLeft, e.clientY);
+
+            // Check if an elbow point is clicked
+            for (let i = 0; i < connections.length; i++) {
+                const c = connections[i];
+                if (c.points) {
+                    for (let j = 0; j < c.points.length; j++) {
+                        const p = c.points[j];
+                        if (Math.hypot(worldPos.x - p.x, worldPos.y - p.y) < 10 / transform.scale) {
+                            draggingPoint = { connectionIndex: i, pointIndex: j };
+                            return;
+                        }
+                    }
+                }
+            }
+
+            const p = hitPin(worldPos.x, worldPos.y);
+            if (p) {
+                if (!linkStart) {
+                    linkStart = p;
+                } else if (linkStart.node.id !== p.node.id || linkStart.idx !== p.idx) {
+                    connections.push({ 
+                        from: { nodeId: linkStart.node.id, pinIdx: linkStart.idx }, 
+                        to: { nodeId: p.node.id, pinIdx: p.idx },
+                        color: selectedWireColor,
+                        points: []
+                    });
+                    linkStart = null;
+                    pushState();
+                }
+                return;
+            }
+
+            const n = hitNode(worldPos.x, worldPos.y);
+            if (n) {
+                dragging = n;
+                dragOff.x = worldPos.x - n.x;
+                dragOff.y = worldPos.y - n.y;
+                selectedNode = n;
+                updatePropertiesPanel();
+                return;
+            }
+
+            // If no pin, node, or existing elbow point is hit, check if a wire segment is hit
+            const connectionHit = hitConnection(worldPos.x, worldPos.y);
+            if (connectionHit) {
+                // Insert a new point at the clicked position
+                connections[connectionHit.connectionIndex].points.splice(connectionHit.segmentIndex + 1, 0, { x: snapToGrid(worldPos.x), y: snapToGrid(worldPos.y) });
+                draggingPoint = { connectionIndex: connectionHit.connectionIndex, pointIndex: connectionHit.segmentIndex + 1 };
+                pushState();
+                return;
+            }
+
+            isPanning = true;
+            panStart.x = e.clientX;
+            panStart.y = e.clientY;
+        });
+
+        canvas.addEventListener('pointermove', e => {
+            const worldPos = screenToWorld(e.clientX - canvas.offsetLeft, e.clientY);
+            if (dragging) {
+                dragging.x = snapToGrid(worldPos.x - dragOff.x);
+                dragging.y = snapToGrid(worldPos.y - dragOff.y);
+            } else if (draggingPoint) {
+                connections[draggingPoint.connectionIndex].points[draggingPoint.pointIndex] = { 
+                    x: snapToGrid(worldPos.x), 
+                    y: snapToGrid(worldPos.y) 
+                };
+            } else if (isPanning) {
+                transform.x += e.clientX - panStart.x;
+                transform.y += e.clientY - panStart.y;
+                panStart.x = e.clientX;
+                panStart.y = e.clientY;
+            }
+        });
+
+        canvas.addEventListener('pointerup', () => {
+            if (dragging || draggingPoint) {
+                pushState();
+            }
+            dragging = null;
+            isPanning = false;
+            draggingPoint = null;
+        });
+
+        canvas.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            const worldPos = screenToWorld(e.clientX - canvas.offsetLeft, e.clientY);
+            const connectionHit = hitConnection(worldPos.x, worldPos.y);
+
+            if (connectionHit) {
+                if (connectionHit.type === 'elbow') {
+                    // Remove the specific elbow point
+                    connections[connectionHit.connectionIndex].points.splice(connectionHit.pointIndex, 1);
+                    pushState();
+                } else if (connectionHit.type === 'segment') {
+                    // Remove the entire wire
+                    connections.splice(connectionHit.connectionIndex, 1);
+                    pushState();
+                }
+            }
+        });
+
+        canvas.addEventListener('dblclick', e => {
+            // Dblclick is now handled by pointerdown for creating new elbow points on drag
+            // This function can be repurposed or removed if no other dblclick functionality is needed.
+        });
+
+        // Keyboard shortcuts for undo/redo
+        window.addEventListener('keydown', e => {
+            console.log('Keydown event:', e.key, 'Ctrl:', e.ctrlKey, 'Meta:', e.metaKey, 'Shift:', e.shiftKey);
+            if (e.ctrlKey || e.metaKey) { // Ctrl or Cmd key
+                if (e.key === 'z') {
+                    e.preventDefault();
+                    undo();
+                } else if (e.key === 'y' || (e.shiftKey && e.key === 'Z')) {
+                    e.preventDefault();
+                    redo();
+                } else if (e.key === 's') {
+                    e.preventDefault();
+                    saveCircuit();
+                } else if (e.key.toLowerCase() === 'b') {
+                    e.preventDefault();
+                    sidebar.classList.toggle('collapsed');
+                    document.body.classList.toggle('sidebar-collapsed');
+                    const newLeft = sidebar.classList.contains('collapsed') ? '0px' : '250px';
+                    canvas.style.left = newLeft;
+                    canvas.style.width = `calc(100% - ${newLeft})`;
+                    setTimeout(setupMatrix, 300); // Recalculate matrix on transition end
+                }
+            }
+        });
+      
+
+        // --- Component Loading & Drag/Drop ---
+        let allComponents = []; // Store all components for AI context
+        try {
+            fetch('/api/components')
+                .then(res => res.json())
+                .then(components => {
+                    allComponents = components; // Save all components
+                    let firstCategoryOpened = false; // Flag to open only the first category
+                    const componentGroups = components.reduce((acc, component) => {
+                        const { type } = component;
+                        if (!acc[type]) {
+                            acc[type] = [];
+                        }
+                        acc[type].push(component);
+                        return acc;
+                    }, {});
+
+                    for (const type in componentGroups) {
+                        const categoryDiv = document.createElement('div');
+                        categoryDiv.className = 'component-category';
+
+                        const categoryHeader = document.createElement('h2');
+                        categoryHeader.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+                        categoryHeader.onclick = () => {
+                            categoryDiv.classList.toggle('open');
+                        };
+
+                        if (!firstCategoryOpened) {
+                            categoryDiv.classList.add('open');
+                            firstCategoryOpened = true;
+                        }
+
+                        const container = document.createElement('div');
+                        container.className = 'component-container';
+
+                        componentGroups[type].forEach(c => {
+                            pinConfig[c.name] = c; // Key by name
+                            if (!pinConfig[c.type]) { // Also key by type if not already present
+                                pinConfig[c.type] = c;
+                            }
+                            const item = document.createElement('div');
+                            item.className = 'component-item';
+                            item.textContent = c.name;
+                            item.setAttribute('draggable', true);
+                            item.addEventListener('dragstart', e => {
+                                e.dataTransfer.setData('text/plain', c.name);
+                            });
+                            container.appendChild(item);
+                        });
+
+                        categoryDiv.appendChild(categoryHeader);
+                        categoryDiv.appendChild(container);
+                        componentList.appendChild(categoryDiv);
+                    }
+
+                    // Now that pinConfig is populated, load the circuit if ID is in URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const initialCircuitId = urlParams.get('circuitId');
+                    if (initialCircuitId) {
+                        loadCircuit(initialCircuitId);
+                    } else {
+                        loadCircuitList(); // Load circuit list if no initial circuit ID
+                    }
+                });
+        } catch (error) {
+            console.error('Error during component or initial circuit loading:', error);
+            alert('Failed to load components or initial circuit. Check console for details.');
+        }
+
+        document.getElementById('component-search').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.component-item').forEach(item => {
+                const itemName = item.textContent.toLowerCase();
+                if (itemName.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // --- AI Chat Functions ---
+        async function sendAiMessage(message) {
+            aiChatOutput.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+            aiChatInput.value = '';
+            aiChatOutput.scrollTop = aiChatOutput.scrollHeight;
+
+            try {
+                const response = await fetch('/api/ai-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                    message,
+currentCircuit: {
+  nodes: nodes.map(node => ({
+  ...node,
+  fullPins: pinConfig[node.name]?.pins || pinConfig[node.type]?.pins || []
+})),
+  connections
+}
+
+
+                })
+                });
+                const data = await response.json();
+                aiChatOutput.innerHTML += `<p><strong>AI:</strong> ${data.aiResponse.text}</p>`;
+                aiChatOutput.scrollTop = aiChatOutput.scrollHeight;
+
+                if (data.functionCallResult && data.functionCallResult.newConnections) {
+                    connections.push(...data.functionCallResult.newConnections);
+                    pushState();
+                }
+            } catch (error) {
+                console.error('Error communicating with AI:', error);
+                aiChatOutput.innerHTML += `<p><strong>AI:</strong> Error communicating with AI.</p>`;
+                aiChatOutput.scrollTop = aiChatOutput.scrollHeight;
+            }
+        }
+
+        sendAiMessageBtn.addEventListener('click', () => {
+            sendAiMessage(aiChatInput.value);
+        });
+
+        aiChatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendAiMessage(aiChatInput.value);
+            }
+        });
+
+        wireWithAiBtn.addEventListener('click', () => {
+            sendAiMessage('wire components');
+        });
+
+        canvas.addEventListener('dragover', e => e.preventDefault());
+        canvas.addEventListener('drop', e => {
+            e.preventDefault();
+            const type = e.dataTransfer.getData('text/plain');
+            const worldPos = screenToWorld(e.clientX - canvas.offsetLeft, e.clientY);
+            addNode(snapToGrid(worldPos.x), snapToGrid(worldPos.y), type);
+            pushState();
+        });
+
+        function addNode(x, y, type) {
+            const component = pinConfig[type];
+            const variables = component.variables ? JSON.parse(JSON.stringify(component.variables)) : [];
+            let w = 150; // Default width
+            let h = 75; // Default height
+
+            // Increase width for microcontrollers to accommodate more pins
+            if (component.type === 'microcontrollers') {
+                w = 250; // Increased width
+                h = 100; // Slightly increased height
+            }
+
+            nodes.push({ id: Date.now().toString(), x, y, w, h, type, variables });
+        }
+
+        function getPins(node) {
+            const component = pinConfig[node.name] || pinConfig[node.type];
+            if (!component) {
+                console.warn(`Component config not found for node:`, node);
+                return [];
+            }
+            return (component.pins || []).map((p, i) => ({
+                node, idx: i, name: p.name,
+                x: node.x + p.x * node.w,
+                y: node.y + p.y * node.h
+            }));
+        }
+
+        function hitPin(x, y) {
+            const tolerance = 10 / transform.scale;
+            for (let n of nodes) {
+                for (let p of getPins(n)) {
+                    if (Math.hypot(x - p.x, y - p.y) < tolerance) return p;
+                }
+            }
+            return null;
+        }
+
+        function hitNode(x, y) {
+            return nodes.find(n => x > n.x && x < n.x + n.w && y > n.y && y < n.y + n.h);
+        }
+
+        // --- Component Symbol Drawing Functions ---
+        function drawComponentSymbol(ctx, node) {
+            const symbolType = pinConfig[node.type].symbolType || 'box';
+            const x = node.x, y = node.y, w = node.w, h = node.h;
+
+            ctx.strokeStyle = '#00aaff';
+            ctx.lineWidth = 2 / transform.scale;
+            ctx.fillStyle = 'rgba(13, 17, 23, 0.8)';
+
+            switch (symbolType) {
+                case 'resistor':
+                    drawResistor(ctx, x, y, w, h);
+                    break;
+                case 'battery':
+                    drawBattery(ctx, x, y, w, h);
+                    break;
+                case 'capacitor':
+                    drawCapacitor(ctx, x, y, w, h);
+                    break;
+                case 'inductor':
+                    drawInductor(ctx, x, y, w, h);
+                    break;
+                case 'diode':
+                    drawDiode(ctx, x, y, w, h);
+                    break;
+                case 'led':
+                    drawLED(ctx, x, y, w, h);
+                    break;
+                case 'npn-transistor':
+                    drawNPNTransistor(ctx, x, y, w, h);
+                    break;
+                case 'microcontroller':
+                    drawMicrocontroller(ctx, x, y, w, h, node.name);
+                    break;
+                case 'push-button':
+                    drawPushButton(ctx, x, y, w, h);
+                    break;
+                case 'potentiometer':
+                    drawPotentiometer(ctx, x, y, w, h);
+                    break;
+                case 'rgb-led':
+                    drawRGBLED(ctx, x, y, w, h);
+                    break;
+                case 'ir-transceiver':
+                case 'nrf24l01':
+                case 'oled-display-i2c':
+                case 'rotary-encoder':
+                case 'joystick-module':
+                default:
+                    // Default to a box for components without specific symbols
+                    ctx.fillRect(x, y, w, h);
+                    ctx.strokeRect(x, y, w, h);
+                    break;
+            }
+        }
+
+        function drawResistor(ctx, x, y, w, h) {
+            ctx.beginPath();
+            ctx.moveTo(x, y + h / 2);
+            ctx.lineTo(x + w * 0.1, y + h / 2);
+            ctx.lineTo(x + w * 0.2, y + h * 0.25);
+            ctx.lineTo(x + w * 0.3, y + h * 0.75);
+            ctx.lineTo(x + w * 0.4, y + h * 0.25);
+            ctx.lineTo(x + w * 0.5, y + h * 0.75);
+            ctx.lineTo(x + w * 0.6, y + h * 0.25);
+            ctx.lineTo(x + w * 0.7, y + h * 0.75);
+            ctx.lineTo(x + w * 0.8, y + h * 0.25);
+            ctx.lineTo(x + w * 0.9, y + h / 2);
+            ctx.lineTo(x + w, y + h / 2);
+            ctx.stroke();
+        }
+
+        function drawBattery(ctx, x, y, w, h) {
+            // Long plate (positive)
+            ctx.beginPath();
+            ctx.moveTo(x + w / 2, y);
+            ctx.lineTo(x + w / 2, y + h * 0.4);
+            ctx.stroke();
+            ctx.fillRect(x + w / 2 - w * 0.15, y + h * 0.4, w * 0.3, h * 0.05);
+            ctx.strokeRect(x + w / 2 - w * 0.15, y + h * 0.4, w * 0.3, h * 0.05);
+
+            // Short plate (negative)
+            ctx.beginPath();
+            ctx.moveTo(x + w / 2, y + h);
+            ctx.lineTo(x + w / 2, y + h * 0.6);
+            ctx.stroke();
+            ctx.fillRect(x + w / 2 - w * 0.1, y + h * 0.55, w * 0.2, h * 0.05);
+            ctx.strokeRect(x + w / 2 - w * 0.1, y + h * 0.55, w * 0.2, h * 0.05);
+        }
+
+        function drawCapacitor(ctx, x, y, w, h) {
+            ctx.beginPath();
+            ctx.moveTo(x, y + h / 2);
+            ctx.lineTo(x + w * 0.4, y + h / 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + w * 0.4, y + h * 0.1);
+            ctx.lineTo(x + w * 0.4, y + h * 0.9);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + w * 0.6, y + h * 0.1);
+            ctx.lineTo(x + w * 0.6, y + h * 0.9);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + w * 0.6, y + h / 2);
+            ctx.lineTo(x + w, y + h / 2);
+            ctx.stroke();
+        }
+
+        function drawInductor(ctx, x, y, w, h) {
+            ctx.beginPath();
+            ctx.moveTo(x, y + h / 2);
+            ctx.lineTo(x + w * 0.1, y + h / 2);
+            ctx.arc(x + w * 0.2, y + h / 2, w * 0.1, Math.PI, 0, false);
+            ctx.arc(x + w * 0.4, y + h / 2, w * 0.1, Math.PI, 0, false);
+            ctx.arc(x + w * 0.6, y + h / 2, w * 0.1, Math.PI, 0, false);
+            ctx.arc(x + w * 0.8, y + h / 2, w * 0.1, Math.PI, 0, false);
+            ctx.lineTo(x + w, y + h / 2);
+            ctx.stroke();
+        }
+
+        function drawDiode(ctx, x, y, w, h) {
+            ctx.beginPath();
+            ctx.moveTo(x, y + h / 2);
+            ctx.lineTo(x + w * 0.4, y + h / 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + w * 0.4, y + h * 0.2);
+            ctx.lineTo(x + w * 0.7, y + h / 2);
+            ctx.lineTo(x + w * 0.4, y + h * 0.8);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(x + w * 0.7, y + h * 0.2);
+            ctx.lineTo(x + w * 0.7, y + h * 0.8);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x + w * 0.7, y + h / 2);
+            ctx.lineTo(x + w, y + h / 2);
+            ctx.stroke();
+        }
+
+        function drawLED(ctx, x, y, w, h) {
+            drawDiode(ctx, x, y, w, h);
+            // Add arrows for light emission
+            ctx.beginPath();
+            ctx.moveTo(x + w * 0.6, y + h * 0.2);
+            ctx.lineTo(x + w * 0.7, y + h * 0.1);
+            ctx.moveTo(x + w * 0.7, y + h * 0.2);
+            ctx.lineTo(x + w * 0.8, y + h * 0.1);
+            ctx.stroke();
+        }
+
+        function drawNPNTransistor(ctx, x, y, w, h) {
+            const centerX = x + w / 2;
+            const centerY = y + h / 2;
+
+            // Base line
+            ctx.beginPath();
+            ctx.moveTo(x + w * 0.2, centerY);
+            ctx.lineTo(centerX, centerY);
+            ctx.stroke();
+
+            // Collector line
+            ctx.beginPath();
+            ctx.moveTo(centerX, y + h * 0.1);
+            ctx.lineTo(centerX, centerY);
+            ctx.stroke();
+
+            // Emitter line with arrow
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX, y + h * 0.9);
+            ctx.stroke();
+
+            // Circle around
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, Math.min(w, h) * 0.4, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+        function drawMicrocontroller(ctx, x, y, w, h, name) {
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeRect(x, y, w, h);
+            ctx.fillStyle = '#c9d1d9';
+            ctx.font = `${14 / transform.scale}px Courier New`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(name, x + w / 2, y + h / 2);
+        }
+
+        function drawPushButton(ctx, x, y, w, h) {
+            ctx.fillRect(x + w * 0.25, y + h * 0.25, w * 0.5, h * 0.5);
+            ctx.strokeRect(x + w * 0.25, y + h * 0.25, w * 0.5, h * 0.5);
+            ctx.beginPath();
+            ctx.moveTo(x + w * 0.5, y + h * 0.25);
+            ctx.lineTo(x + w * 0.5, y + h * 0.1);
+            ctx.stroke();
+        }
+
+        function drawPotentiometer(ctx, x, y, w, h) {
+            drawResistor(ctx, x, y, w, h);
+            ctx.beginPath();
+            ctx.moveTo(x + w * 0.5, y + h * 0.75);
+            ctx.lineTo(x + w * 0.5, y + h * 0.25);
+            ctx.lineTo(x + w * 0.7, y + h * 0.45);
+            ctx.stroke();
+        }
+
+        function drawRGBLED(ctx, x, y, w, h) {
+            drawLED(ctx, x, y, w, h);
+            ctx.fillStyle = '#c9d1d9';
+            ctx.font = `6px Courier New`;
+            ctx.fillText('RGB', x + w / 2, y + h * 0.9);
+        }
+
+        function updatePropertiesPanel() {
+            const propertiesPanel = document.getElementById('properties-panel');
+            if (selectedNode && selectedNode.variables) {
+                propertiesPanel.innerHTML = '<h3>Properties</h3>';
+                selectedNode.variables.forEach((variable, index) => {
+                    const property = document.createElement('div');
+                    property.className = 'property';
+                    property.innerHTML = `
+                        <label>${variable.name} (${variable.unit})</label>
+                        <input type="number" value="${variable.value}" min="${variable.min}" max="${variable.max}" step="${(variable.max - variable.min) / 100}" oninput="updateVariable(${index}, this.value)">
+                    `;
+                    propertiesPanel.appendChild(property);
+                });
+            } else {
+                propertiesPanel.innerHTML = '';
+            }
+        }
+
+        function updateVariable(index, value) {
+            if (selectedNode && selectedNode.variables[index]) {
+                selectedNode.variables[index].value = parseFloat(value);
+                pushState();
+            }
+        }
+
+        function hitConnection(x, y) {
+            const tolerance = 10 / transform.scale;
+            const elbowTolerance = 8 / transform.scale; // Slightly larger tolerance for elbow points
+
+            for (let i = 0; i < connections.length; i++) {
+                const c = connections[i];
+                const fromNode = nodes.find(n => n.id === c.from.nodeId);
+                const toNode = nodes.find(n => n.id === c.to.nodeId);
+                if (!fromNode || !toNode) continue;
+
+                const allPoints = [ getPins(fromNode)[c.from.pinIdx], ...(c.points || []), getPins(toNode)[c.to.pinIdx] ];
+
+                // Check for elbow point hit first
+                if (c.points) {
+                    for (let j = 0; j < c.points.length; j++) {
+                        const p = c.points[j];
+                        if (Math.hypot(x - p.x, y - p.y) < elbowTolerance) {
+                            return { type: 'elbow', connectionIndex: i, pointIndex: j };
+                        }
+                    }
+                }
+
+                // Check for segment hit
+                for (let j = 0; j < allPoints.length - 1; j++) {
+                    const p1 = allPoints[j];
+                    const p2 = allPoints[j+1];
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const len = Math.hypot(dx, dy);
+                    if (len === 0) continue; // Avoid division by zero for coincident points
+
+                    const dot = (((x - p1.x) * dx) + ((y - p1.y) * dy)) / (len * len);
+                    const closestX = p1.x + dot * dx;
+                    const closestY = p1.y + dot * dy;
+
+                    const onSegment = dot >= 0 && dot <= 1;
+                    if (!onSegment) continue;
+
+                    if (Math.hypot(x - closestX, y - closestY) < tolerance) {
+                        return { type: 'segment', connectionIndex: i, segmentIndex: j };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function saveCircuit() {
+            let nameToSave = circuitName;
+            let assetFolderToSave = circuitAssetFolder;
+
+            if (!circuitId) { // Only prompt if it's a new circuit
+                const newName = prompt("Enter circuit name:", circuitName);
+                if (!newName) return;
+                nameToSave = newName;
+
+                const newAssetFolder = prompt("Enter an optional asset folder name (e.g., 'my-arduino-code'):", circuitAssetFolder);
+                assetFolderToSave = newAssetFolder;
+            }
+
+            const data = { id: circuitId, name: nameToSave, nodes, connections };
+            if (assetFolderToSave) {
+                data.assetFolder = assetFolderToSave;
+            }
+
+            // Generate netlist and add to data
+            data.netlist = generateNetlist();
+
+            fetch('/api/circuits', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(res => res.json())
+              .then(savedCircuit => {
+                  if (savedCircuit.id) {
+                      circuitId = savedCircuit.id; // Update circuitId if it was a new circuit
+                      circuitName = savedCircuit.name; // Update circuitName
+                      circuitAssetFolder = savedCircuit.assetFolder || ""; // Update assetFolder
+                      alert('Circuit saved!');
+                  } else {
+                      alert('Save failed.');
+                  }
+              })
+              .catch(error => {
+                  console.error('Error saving circuit:', error);
+                  alert('Save failed.');
+              });
+        }
+
+        function generateNetlist() {
+            const netlist = {
+                components: [],
+                nets: []
+            };
+
+            // Map nodes to netlist components
+            nodes.forEach(node => {
+                netlist.components.push({
+                    id: node.id,
+                    name: node.name || node.type,
+                    type: node.type,
+                    variables: node.variables || [],
+                    pins: pinConfig[node.type].pins.map(p => p.name) // Store pin names
+                });
+            });
+
+            // Map connections to netlist nets
+            const processedConnections = new Set();
+            connections.forEach(conn => {
+                const fromNode = nodes.find(n => n.id === conn.from.nodeId);
+                const toNode = nodes.find(n => n.id === conn.to.nodeId);
+                if (!fromNode || !toNode) return;
+
+                const fromPinName = pinConfig[fromNode.type].pins[conn.from.pinIdx].name;
+                const toPinName = pinConfig[toNode.type].pins[conn.to.pinIdx].name;
+
+                // Create a unique identifier for the connection to avoid duplicates in nets
+                const connectionId1 = `${fromNode.id}:${fromPinName}-${toNode.id}:${toPinName}`;
+                const connectionId2 = `${toNode.id}:${toPinName}-${fromNode.id}:${fromPinName}`;
+
+                if (!processedConnections.has(connectionId1) && !processedConnections.has(connectionId2)) {
+                    netlist.nets.push({
+                        from: { componentId: fromNode.id, pin: fromPinName },
+                        to: { componentId: toNode.id, pin: toPinName },
+                        color: conn.color
+                    });
+                    processedConnections.add(connectionId1);
+                    processedConnections.add(connectionId2);
+                }
+            });
+
+            return netlist;
+        }
+
+        function exportNetlist() {
+            const netlist = generateNetlist();
+            const filename = `${circuitName.replace(/[^a-zA-Z0-9]/g, '_')}_netlist.json`;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(netlist, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", filename);
+            document.body.appendChild(downloadAnchorNode); // required for firefox
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function openCircuitFolder() {
+            if (!circuitId) {
+                alert("Please save the circuit first.");
+                return;
+            }
+            fetch(`/api/circuits/${circuitId}/open_folder`)
+                .then(response => {
+                    if (!response.ok) {
+                        alert("Could not open circuit folder. Server error.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error opening circuit folder:', error);
+                    alert("Failed to open circuit folder.");
+                });
+        }
+
+        async function generateAndOpenKiCad() {
+            if (!circuitId) {
+                alert("Please save the circuit first.");
+                return;
+            }
+            try {
+                const response = await fetch(`/api/circuits/${circuitId}/open_kicad`);
+                if (response.ok) {
+                    alert("Attempting to open KiCad. Check your desktop.");
+                } else {
+                    const errorText = await response.text();
+                    alert(`Failed to open KiCad: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error opening KiCad:', error);
+                alert("Failed to connect to server to open KiCad.");
+            }
+        }
+
+        function isPowerPin(pinName) {
+            return ['5V', 'VIN', 'Positive', 'VCC', 'VDD'].some(keyword => pinName.includes(keyword));
+        }
+
+        function isGroundPin(pinName) {
+            return ['GND', 'Negative', 'VSS'].some(keyword => pinName.includes(keyword));
+        }
+
+        function rerouteWires() {
+            console.log('Rerouting wires...');
+            connections.forEach(c => {
+                const fromNode = nodes.find(n => n.id === c.from.nodeId);
+                const toNode = nodes.find(n => n.id === c.to.nodeId);
+                if (!fromNode || !toNode) return;
+
+                const fromPin = getPins(fromNode)[c.from.pinIdx];
+                const toPin = getPins(toNode)[c.to.pinIdx];
+
+                // Assign color based on pin type
+                if (isPowerPin(fromPin.name) || isPowerPin(toPin.name)) {
+                    c.color = '#ff0000'; // Red for power
+                } else if (isGroundPin(fromPin.name) || isGroundPin(toPin.name)) {
+                    c.color = '#000000'; // Black for ground
+                } else {
+                    c.color = '#00aaff'; // Default blue for others
+                }
+
+                const p1x = snapToGrid(fromPin.x);
+                const p1y = snapToGrid(fromPin.y);
+                const p2x = snapToGrid(toPin.x);
+                const p2y = snapToGrid(toPin.y);
+
+                c.points = []; // Clear existing points before adding new ones
+
+                // Implement simple L-shaped routing: horizontal then vertical
+                if (p1x !== p2x && p1y !== p2y) {
+                    // Add one intermediate point to create an L-shape
+                    c.points.push({ x: p2x, y: p1y });
+                }
+                // If pins are already horizontally or vertically aligned, c.points remains empty,
+                // which correctly results in a straight line.
+            });
+            pushState();
+            draw(); // Explicitly call draw to force a re-render
+        }
+
+        // --- Init ---
+        setupMatrix();
+        window.addEventListener('resize', setupMatrix);
+        pushState(); // Save initial state
+        draw();
+
+    </script>
+</body>
+</html>

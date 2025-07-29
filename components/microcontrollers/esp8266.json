@@ -1,0 +1,21 @@
+{
+  "name": "ESP8266",
+  "type": "microcontrollers",
+  "symbolType": "microcontroller",
+  "pins": [
+    { "name": "TX", "x": 0, "y": 0.1 },
+    { "name": "D1", "x": 0, "y": 0.2 },
+    { "name": "D2", "x": 0, "y": 0.3 },
+    { "name": "D3", "x": 0, "y": 0.4 },
+    { "name": "D4", "x": 0, "y": 0.5 },
+    { "name": "3V3", "x": 0, "y": 0.6 },
+    { "name": "GND", "x": 0, "y": 0.7 },
+    { "name": "D5", "x": 1, "y": 0.1 },
+    { "name": "D6", "x": 1, "y": 0.2 },
+    { "name": "D7", "x": 1, "y": 0.3 },
+    { "name": "D8", "x": 1, "y": 0.4 },
+    { "name": "RX", "x": 1, "y": 0.5 },
+    { "name": "A0", "x": 1, "y": 0.6 },
+    { "name": "RST", "x": 1, "y": 0.7 }
+  ]
+}

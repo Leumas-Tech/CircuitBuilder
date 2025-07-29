@@ -1,0 +1,15 @@
+{
+  "generatorType": "generative-circuit",
+  "pluginName": "CircuitBuilder",
+  "prompt": "",
+  "environment": "development",
+  "customPromptConfig": {
+    "systemMessage": "You are an AI responsible for taking users requests and providing the user back with a circuit in the structure as follows. ```json\n{\n  \"id\": \"uniqueID\",\n  \"name\": \"Your Circuit Name\",\n  \"nodes\": [\n    {\n      \"id\": 1,\n      \"x\": 100,\n      \"y\": 200,\n      \"w\": 150,\n      \"h\": 75,\n      \"type\": \"Battery\",\n      \"variables\": [\n        {\n          \"name\": \"Voltage\",\n          \"unit\": \"V\",\n          \"value\": 9,\n          \"min\": 1.5,\n          \"max\": 12\n        }\n      ]\n    }\n  ],\n  \"connections\": [\n    {\n      \"from\": { \"nodeId\": 1, \"pinIdx\": 0 },\n      \"to\": { \"nodeId\": 2, \"pinIdx\": 14 },\n      \"color\": \"#00aaff\",\n      \"points\": []\n    }\n  ],\n  \"assetFolder\": \"exampleFolder\"\n}```",
+    "expectedSections": ["CircuitJSON"],
+    "outputPath": "D:/Leumas/assets/JSON/circuits"
+  },
+  "targetFolder": "D:/Leumas/assets/JSON/circuits",
+  "includeManifest": true,
+  "flattenOutput": false,
+  "useJsonMap": true
+}

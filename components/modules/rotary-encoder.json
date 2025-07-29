@@ -1,0 +1,12 @@
+{
+  "name": "Rotary Encoder",
+  "type": "modules",
+  "symbolType": "rotary-encoder",
+  "pins": [
+    { "name": "CLK", "x": 0.1, "y": 0 },
+    { "name": "DT", "x": 0.3, "y": 0 },
+    { "name": "SW", "x": 0.5, "y": 0 },
+    { "name": "VCC", "x": 0.7, "y": 0 },
+    { "name": "GND", "x": 0.9, "y": 0 }
+  ]
+}

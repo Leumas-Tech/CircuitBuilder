@@ -1,0 +1,10 @@
+{
+  "name": "NPN Transistor",
+  "type": "components",
+  "symbolType": "npn-transistor",
+  "pins": [
+    { "name": "Base", "x": 0, "y": 0.5 },
+    { "name": "Collector", "x": 0.5, "y": 0 },
+    { "name": "Emitter", "x": 0.5, "y": 1 }
+  ]
+}

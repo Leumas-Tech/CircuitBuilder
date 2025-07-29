@@ -1,0 +1,12 @@
+{
+  "name": "Resistor",
+  "type": "components",
+  "symbolType": "resistor",
+  "variables": [
+    { "name": "Resistance", "unit": "Ω", "value": 1000, "min": 10, "max": 1000000 }
+  ],
+  "pins": [
+    { "name":"A", "x":0,   "y":0.5 },
+    { "name":"B", "x":1,   "y":0.5 }
+  ]
+}

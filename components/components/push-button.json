@@ -1,0 +1,11 @@
+{
+  "name": "Push Button",
+  "type": "components",
+  "symbolType": "push-button",
+  "pins": [
+    { "name": "Pin1", "x": 0, "y": 0.25 },
+    { "name": "Pin2", "x": 0, "y": 0.75 },
+    { "name": "Pin3", "x": 1, "y": 0.25 },
+    { "name": "Pin4", "x": 1, "y": 0.75 }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Inductor",
+  "type": "components",
+  "symbolType": "inductor",
+  "variables": [
+    { "name": "Inductance", "unit": "H", "value": 0.000001, "min": 0.000000001, "max": 1, "step": 0.00000001 }
+  ],
+  "pins": [
+    { "name": "A", "x": 0, "y": 0.5 },
+    { "name": "B", "x": 1, "y": 0.5 }
+  ]
+}

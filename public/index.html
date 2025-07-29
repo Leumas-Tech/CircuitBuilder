@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leumas Tech Circuit Builder - Start</title>
+    <style>
+        :root {
+            --bg-color: #000;
+            --grid-color: rgba(0, 150, 255, 0.2);
+            --glow-color: rgba(0, 200, 255, 0.5);
+            --text-color: #c9d1d9;
+            --accent-color: #00aaff;
+            --button-bg: #161b22;
+            --button-border: #00aaff;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        #matrix-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        .main-menu {
+            background-color: rgba(13, 17, 23, 0.9);
+            border: 1px solid var(--grid-color);
+            box-shadow: 0 0 20px var(--glow-color);
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .main-menu h1 {
+            color: var(--accent-color);
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px var(--glow-color);
+            animation: flicker 1.5s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--glow-color); }
+            50% { opacity: 0.8; text-shadow: 0 0 5px var(--glow-color); }
+        }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .menu-button {
+            width: 200px;
+            padding: 15px;
+            background-color: var(--button-bg);
+            border: 1px solid var(--button-border);
+            color: var(--text-color);
+            font-size: 1.2em;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .menu-button:hover {
+            background-color: var(--button-border);
+            box-shadow: 0 0 15px var(--glow-color);
+            color: var(--bg-color);
+        }
+        .menu-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
+            transition: 0.5s;
+        }
+        .menu-button:hover::before {
+            left: 100%;
+        }
+        .menu-button:hover {
+            background-color: var(--button-border);
+            box-shadow: 0 0 15px var(--glow-color);
+            color: var(--bg-color);
+        }
+        .circuit-list-container {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--grid-color);
+            margin-top: 20px;
+            padding: 10px;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 5px;
+        }
+        .circuit-item {
+            padding: 8px;
+            cursor: pointer;
+            text-align: left;
+            border-bottom: 1px dashed rgba(0, 150, 255, 0.1);
+        }
+        .circuit-item:last-child {
+            border-bottom: none;
+        }
+        .circuit-item:hover {
+            background-color: rgba(0, 150, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="main-menu">
+        <h1>Leumas Tech Circuit Builder</h1>
+        <div class="button-container">
+            <button class="menu-button" onclick="location.href='/builder.html'">Start New Circuit</button>
+            <button class="menu-button" id="loadCircuitButton">Load Existing Circuit</button>
+            <button class="menu-button" onclick="location.href='/gallery.html'">Component Gallery</button>
+            <button class="menu-button" onclick="location.href='/add-component.html'">Add New Component</button>
+        </div>
+        <div id="circuitListContainer" class="circuit-list-container" style="display: none;">
+            <ul id="circuitList"></ul>
+        </div>
+    </div>
+
+    <script>
+        const matrixCanvas = document.getElementById('matrix-canvas');
+        const ctx = matrixCanvas.getContext('2d');
+
+        let columns;
+        let drops = [];
+        let speed = [];
+        const fontSize = 18;
+        const chars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        function setupMatrix() {
+            matrixCanvas.width = window.innerWidth;
+            matrixCanvas.height = window.innerHeight;
+            columns = Math.floor(matrixCanvas.width / fontSize);
+            drops = [];
+            speed = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = 1;
+                speed[i] = Math.random() * 5 + 2; // Random speed for each column
+            }
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+
+            ctx.font = `${fontSize}px monospace`;
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+
+                // Glowing head character
+                ctx.fillStyle = '#00aaff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00aaff';
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // Fading tail
+                if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                    speed[i] = Math.random() * 5 + 2; // Reset speed
+                }
+                drops[i]++;
+            }
+
+            // Reset shadow for other elements
+            ctx.shadowBlur = 0;
+
+            requestAnimationFrame(drawMatrix);
+        }
+
+        setupMatrix();
+        window.addEventListener('resize', setupMatrix);
+        drawMatrix();
+
+        const loadCircuitButton = document.getElementById('loadCircuitButton');
+        const circuitListContainer = document.getElementById('circuitListContainer');
+        const circuitList = document.getElementById('circuitList');
+
+        loadCircuitButton.addEventListener('click', async () => {
+            if (circuitListContainer.style.display === 'none') {
+                try {
+                    const response = await fetch('/api/circuits');
+                    const circuits = await response.json();
+                    circuitList.innerHTML = '';
+                    if (circuits.length === 0) {
+                        circuitList.innerHTML = '<li class="circuit-item">No saved circuits.</li>';
+                    } else {
+                        circuits.forEach(circuit => {
+                            const li = document.createElement('li');
+                            li.className = 'circuit-item';
+                            li.textContent = circuit.name;
+                            li.dataset.circuitId = circuit.id;
+                            li.addEventListener('click', () => {
+                                location.href = `/builder.html?circuitId=${circuit.id}`;
+                            });
+                            circuitList.appendChild(li);
+                        });
+                    }
+                    circuitListContainer.style.display = 'block';
+                } catch (error) {
+                    console.error('Error loading circuits:', error);
+                    alert('Failed to load circuits.');
+                }
+            } else {
+                circuitListContainer.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

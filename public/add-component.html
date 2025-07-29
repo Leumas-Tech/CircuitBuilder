@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Component - Circuit Builder</title>
+    <style>
+        :root {
+            --bg-color: #000;
+            --grid-color: rgba(0, 150, 255, 0.2);
+            --glow-color: rgba(0, 200, 255, 0.5);
+            --text-color: #c9d1d9;
+            --accent-color: #00aaff;
+            --button-bg: #161b22;
+            --button-border: #00aaff;
+        }
+     body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    background-color: #0d1117;
+    padding: 20px 40px;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--grid-color);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--accent-color);
+}
+
+.header .btn {
+    margin-left: auto;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 40px;
+    padding: 40px;
+    max-width: 1400px;
+    margin: auto;
+    z-index: 1;
+}
+
+.form-section, .preview-section {
+    background-color: rgba(13, 17, 23, 0.95);
+    border: 2px solid var(--grid-color);
+    box-shadow: 0 0 20px var(--glow-color);
+    padding: 30px;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: var(--button-bg);
+    border-bottom: 1px solid var(--grid-color);
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--accent-color);
+    padding: 12px 16px;
+    border-radius: 6px 6px 0 0;
+}
+
+.card-body {
+    padding: 20px 16px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-control {
+    background-color: #0d1117;
+    border: 1px solid var(--grid-color);
+    color: var(--text-color);
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.btn {
+    margin-top: 10px;
+}
+
+#previewCanvas {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    display: block;
+    margin: 0 auto;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: 2px solid var(--grid-color);
+}
+
+#pinsContainer .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#pinsContainer .form-row .col,
+#pinsContainer .form-row .col-auto {
+    flex: 1;
+    min-width: 90px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    border: 1px solid var(--grid-color);
+    padding: 8px;
+    text-align: left;
+}
+
+.table th {
+    background-color: var(--button-bg);
+}
+
+.btn {
+    background-color: var(--button-bg);
+    border: 1px solid var(--button-border);
+    color: var(--text-color);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.btn:hover {
+    background-color: var(--accent-color);
+    box-shadow: 0 0 10px var(--glow-color);
+}
+
+.btn-info {
+    border-color: #00aaff;
+}
+
+.btn-secondary {
+    border-color: #6c757d;
+}
+
+.btn-danger {
+    border-color: #dc3545;
+}
+
+.btn-primary {
+    border-color: #007bff;
+}
+
+.btn-sm {
+    padding: 2px 5px;
+    font-size: 0.8rem;
+}
+
+#drop-area {
+    border: 2px dashed var(--grid-color);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+#drop-area.highlight {
+    background-color: rgba(0, 150, 255, 0.1);
+    border-color: var(--accent-color);
+}
+
+#file-input {
+    display: none;
+}
+
+.mr-2 {
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .main-content {
+        padding: 20px;
+        grid-template-columns: 1fr;
+    }
+    #previewCanvas {
+        max-height: 200px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div class="header">
+        <h1>Add a New Component</h1>
+        <a href="/" class="btn btn-secondary">Back to Builder</a>
+    </div>
+
+    <div class="main-content">
+        <div class="form-section">
+            <div class="card">
+                <div class="card-body">
+                    <form id="addComponentForm">
+                        <input type="hidden" id="originalComponentName" value="">
+                        <input type="hidden" id="originalComponentType" value="">
+                        <div class="form-group">
+                            <label for="componentName">Component Name</label>
+                            <input type="text" class="form-control" id="componentName" placeholder="e.g., Raspberry Pi, 555 Timer" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="componentType">Component Type</label>
+                            <select class="form-control" id="componentType" required>
+                                <option value="" disabled selected>Select a type</option>
+                                <option value="microcontrollers">Microcontroller</option>
+                                <option value="components">Component</option>
+                                <option value="modules">Module</option>
+                            </select>
+                        </div>
+                        <hr>
+                        <h5>Pins</h5>
+                        <div id="pinsContainer">
+                            <!-- Pins will be added here dynamically -->
+                        </div>
+                        <button type="button" class="btn btn-info btn-sm mt-2" id="addPin">Add Pin</button>
+                        <hr>
+                        <button type="submit" class="btn btn-primary">Save Component</button>
+                        <div class="form-group mt-3">
+                            <label>Import from JSON</label>
+                            <div id="drop-area">
+                                <p>Drag and drop a JSON file here, or click to select a file.</p>
+                                <input type="file" id="file-input" accept=".json">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="preview-section">
+            <div class="card">
+                <div class="card-header">
+                    Preview
+                </div>
+                <div class="card-body">
+                    <canvas id="previewCanvas" width="300" height="150"></canvas>
+                </div>
+            </div>
+            <div class="card mt-4">
+                <div class="card-header">
+                    Saved Components
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="savedComponentsList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        
+
+        
+
+        const componentNameInput = document.getElementById('componentName');
+        const pinsContainer = document.getElementById('pinsContainer');
+        const addPinButton = document.getElementById('addPin');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const ctxPreview = previewCanvas.getContext('2d');
+        let draggingPin = null;
+
+        function getPinsFromForm() {
+            const pins = [];
+            const pinInputs = document.querySelectorAll('#pinsContainer .form-row');
+            pinInputs.forEach((row, index) => {
+                const pinName = row.querySelector(`[name="pinName${index}"]`).value;
+                const pinX = parseFloat(row.querySelector(`[name="pinX${index}"]`).value);
+                const pinY = parseFloat(row.querySelector(`[name="pinY${index}"]`).value);
+                if (pinName && !isNaN(pinX) && !isNaN(pinY)) {
+                    pins.push({ name: pinName, x: pinX, y: pinY, originalIndex: index });
+                }
+            });
+            return pins;
+        }
+
+        function drawPreview() {
+            const name = componentNameInput.value || "Component";
+            const pins = getPinsFromForm();
+
+            ctxPreview.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+            const node = { x: 50, y: 25, w: 200, h: 100 };
+
+            // Box
+            ctxPreview.fillStyle = '#161b22';
+            ctxPreview.strokeStyle = '#00aaff';
+            ctxPreview.lineWidth = 1;
+            ctxPreview.fillRect(node.x, node.y, node.w, node.h);
+            ctxPreview.strokeRect(node.x, node.y, node.w, node.h);
+
+            // Label
+            ctxPreview.fillStyle = '#c9d1d9';
+            ctxPreview.font = '14px Courier New';
+            ctxPreview.textAlign = 'center';
+            ctxPreview.textBaseline = 'middle';
+            ctxPreview.fillText(name, node.x + node.w / 2, node.y + node.h / 2);
+
+            // Pins
+            pins.forEach(p => {
+                const x = node.x + p.x * node.w;
+                const y = node.y + p.y * node.h;
+                ctxPreview.beginPath();
+                ctxPreview.fillStyle = draggingPin === p ? '#ff9800' : '#00aaff';
+                ctxPreview.strokeStyle = '#00aaff';
+                ctxPreview.lineWidth = 1;
+                ctxPreview.arc(x, y, 8, 0, 2 * Math.PI);
+                ctxPreview.fill();
+                ctxPreview.stroke();
+                // Pin name
+                ctxPreview.fillStyle = '#c9d1d9';
+                ctxPreview.font = '10px Courier New';
+                ctxPreview.textAlign = 'center';
+                ctxPreview.textBaseline = 'top';
+                ctxPreview.fillText(p.name, x, y + 10);
+            });
+        }
+
+        previewCanvas.addEventListener('pointerdown', e => {
+            const rect = previewCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const node = { x: 50, y: 25, w: 200, h: 100 };
+            const pins = getPinsFromForm();
+
+            for (const pin of pins) {
+                const pinX = node.x + pin.x * node.w;
+                const pinY = node.y + pin.y * node.h;
+                if (Math.hypot(x - pinX, y - pinY) < 8) {
+                    draggingPin = pin;
+                    previewCanvas.style.cursor = 'grabbing';
+                    return;
+                }
+            }
+        });
+
+        previewCanvas.addEventListener('pointermove', e => {
+            if (!draggingPin) return;
+            const rect = previewCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const node = { x: 50, y: 25, w: 200, h: 100 };
+
+            let newX = (x - node.x) / node.w;
+            let newY = (y - node.y) / node.h;
+
+            // Clamp values between 0 and 1
+            newX = Math.max(0, Math.min(1, newX));
+            newY = Math.max(0, Math.min(1, newY));
+
+            const pinRow = pinsContainer.children[draggingPin.originalIndex];
+            pinRow.querySelector(`[name^="pinX"]`).value = newX.toFixed(2);
+            pinRow.querySelector(`[name^="pinY"]`).value = newY.toFixed(2);
+
+            drawPreview();
+        });
+
+        previewCanvas.addEventListener('pointerup', () => {
+            draggingPin = null;
+            previewCanvas.style.cursor = 'grab';
+        });
+
+        componentNameInput.addEventListener('input', drawPreview);
+        pinsContainer.addEventListener('input', drawPreview);
+
+        addPinButton.addEventListener('click', () => {
+            const pinIndex = pinsContainer.children.length;
+            const pinGroup = document.createElement('div');
+            pinGroup.className = 'form-row align-items-center mb-2';
+            pinGroup.innerHTML = `
+                <div class="col">
+                    <input type="text" class="form-control" placeholder="Pin Name" name="pinName${pinIndex}" required>
+                </div>
+                <div class="col">
+                    <input type="number" class="form-control" placeholder="X (0-1)" name="pinX${pinIndex}" step="0.01" min="0" max="1" required>
+                </div>
+                <div class="col">
+                    <input type="number" class="form-control" placeholder="Y (0-1)" name="pinY${pinIndex}" step="0.01" min="0" max="1" required>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove(); drawPreview();">Remove</button>
+                </div>
+            `;
+            pinsContainer.appendChild(pinGroup);
+            drawPreview();
+        });
+
+        document.getElementById('addComponentForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const name = document.getElementById('componentName').value;
+            const type = document.getElementById('componentType').value;
+            const originalName = document.getElementById('originalComponentName').value;
+            const originalType = document.getElementById('originalComponentType').value;
+            const pins = getPinsFromForm().map(({name, x, y}) => ({name, x, y})); // Strip originalIndex
+
+            const componentData = { name, type, pins, originalName, originalType };
+
+            try {
+                const response = await fetch('/api/components', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(componentData),
+                });
+                if (response.ok) {
+                    alert('Component saved successfully!');
+                    window.location.reload();
+                } else {
+                    alert('Error saving component: ' + await response.text());
+                }
+            } catch (error) {
+                alert('Failed to send component data.');
+            }
+        });
+
+        
+
+        const dropArea = document.getElementById('drop-area');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }, false);
+
+        dropArea.addEventListener('click', () => {
+            document.getElementById('file-input').click();
+        });
+
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (file.type !== 'application/json') {
+                alert('Invalid file type. Please select a JSON file.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    componentNameInput.value = data.name || '';
+                    pinsContainer.innerHTML = '';
+                    (data.pins || []).forEach(pin => {
+                        addPinButton.click();
+                        const newPinRow = pinsContainer.lastChild;
+                        newPinRow.querySelector('[name^="pinName"]').value = pin.name;
+                        newPinRow.querySelector('[name^="pinX"]').value = pin.x;
+                        newPinRow.querySelector('[name^="pinY"]').value = pin.y;
+                    });
+                    drawPreview();
+                } catch (err) {
+                    alert('Invalid JSON file.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function loadSavedComponents() {
+            try {
+                const response = await fetch('/api/components');
+                const components = await response.json();
+                const tableBody = document.getElementById('savedComponentsList');
+                tableBody.innerHTML = '';
+                components.forEach(c => {
+                    const tr = document.createElement('tr');
+                    
+                    const nameTd = document.createElement('td');
+                    nameTd.textContent = c.name;
+                    tr.appendChild(nameTd);
+
+                    const actionsTd = document.createElement('td');
+                    
+                    const editButton = document.createElement('button');
+                    editButton.className = 'btn btn-sm btn-info mr-2';
+                    editButton.textContent = 'Edit';
+                    editButton.onclick = () => editComponent(c);
+                    actionsTd.appendChild(editButton);
+
+                    const cloneButton = document.createElement('button');
+                    cloneButton.className = 'btn btn-sm btn-secondary';
+                    cloneButton.textContent = 'Clone';
+                    cloneButton.onclick = () => cloneComponent(c);
+                    actionsTd.appendChild(cloneButton);
+                    
+                    tr.appendChild(actionsTd);
+                    tableBody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error loading components:', error);
+            }
+        }
+
+        function editComponent(component) {
+            document.getElementById('componentName').value = component.name;
+            document.getElementById('componentType').value = component.type;
+            document.getElementById('originalComponentName').value = component.name;
+            document.getElementById('originalComponentType').value = component.type;
+
+            pinsContainer.innerHTML = '';
+            (component.pins || []).forEach(pin => {
+                addPinButton.click();
+                const newPinRow = pinsContainer.lastChild;
+                newPinRow.querySelector('[name^="pinName"]').value = pin.name;
+                newPinRow.querySelector('[name^="pinX"]').value = pin.x;
+                newPinRow.querySelector('[name^="pinY"]').value = pin.y;
+            });
+            drawPreview();
+        }
+
+        function cloneComponent(component) {
+            document.getElementById('componentName').value = component.name + ' (copy)';
+            document.getElementById('componentType').value = component.type;
+            document.getElementById('originalComponentName').value = ''; // It's a new component
+            document.getElementById('originalComponentType').value = '';
+
+            pinsContainer.innerHTML = '';
+            (component.pins || []).forEach(pin => {
+                addPinButton.click();
+                const newPinRow = pinsContainer.lastChild;
+                newPinRow.querySelector('[name^="pinName"]').value = pin.name;
+                newPinRow.querySelector('[name^="pinX"]').value = pin.x;
+                newPinRow.querySelector('[name^="pinY"]').value = pin.y;
+            });
+            drawPreview();
+        }
+
+        drawPreview();
+        loadSavedComponents();
+
+        // Initialize and start matrix animation
+        setupMatrix();
+        window.addEventListener('resize', setupMatrix);
+        drawMatrix();
+    </script>
+    </script>
+</body>
+</html>

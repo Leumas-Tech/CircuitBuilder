@@ -1,0 +1,9 @@
+{
+  "name": "Diode",
+  "type": "components",
+  "symbolType": "diode",
+  "pins": [
+    { "name": "Anode", "x": 0, "y": 0.5 },
+    { "name": "Cathode", "x": 1, "y": 0.5 }
+  ]
+}

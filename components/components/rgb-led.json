@@ -1,0 +1,11 @@
+{
+  "name": "RGB LED",
+  "type": "components",
+  "symbolType": "rgb-led",
+  "pins": [
+    { "name": "R", "x": 0.2, "y": 1 },
+    { "name": "G", "x": 0.4, "y": 1 },
+    { "name": "B", "x": 0.6, "y": 1 },
+    { "name": "Common", "x": 0.8, "y": 1 }
+  ]
+}

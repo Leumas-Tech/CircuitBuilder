@@ -1,0 +1,12 @@
+{
+  "name": "Capacitor",
+  "type": "components",
+  "symbolType": "capacitor",
+  "variables": [
+    { "name": "Capacitance", "unit": "F", "value": 0.000001, "min": 0.000000000001, "max": 0.1, "step": 0.000000001 }
+  ],
+  "pins": [
+    { "name": "+", "x": 0, "y": 0.5 },
+    { "name": "-", "x": 1, "y": 0.5 }
+  ]
+}

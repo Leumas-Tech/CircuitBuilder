@@ -1,0 +1,11 @@
+{
+  "name": "OLED Display I2C",
+  "type": "modules",
+  "symbolType": "oled-display-i2c",
+  "pins": [
+    { "name": "VCC", "x": 0.1, "y": 0 },
+    { "name": "GND", "x": 0.4, "y": 0 },
+    { "name": "SCL", "x": 0.6, "y": 0 },
+    { "name": "SDA", "x": 0.9, "y": 0 }
+  ]
+}

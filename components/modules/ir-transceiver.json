@@ -1,0 +1,10 @@
+{
+  "name": "IR Transmitter/Receiver",
+  "type": "modules",
+  "symbolType": "ir-transceiver",
+  "pins": [
+    { "name": "VCC", "x": 0.1, "y": 0 },
+    { "name": "GND", "x": 0.5, "y": 0 },
+    { "name": "Signal", "x": 0.9, "y": 0 }
+  ]
+}

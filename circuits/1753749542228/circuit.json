@@ -1,0 +1,554 @@
+{
+  "id": "1753749542228",
+  "name": "nrf-remote",
+  "nodes": [
+    {
+      "id": "1753749060183",
+      "x": 180,
+      "y": 840,
+      "w": 250,
+      "h": 100,
+      "type": "Arduino Micro",
+      "variables": [],
+      "fullPins": []
+    },
+    {
+      "id": "1753749072036",
+      "x": 200,
+      "y": 360,
+      "w": 150,
+      "h": 75,
+      "type": "Joystick Module",
+      "variables": [],
+      "fullPins": []
+    },
+    {
+      "id": "1753749074900",
+      "x": 500,
+      "y": 480,
+      "w": 150,
+      "h": 75,
+      "type": "nRF24L01",
+      "variables": [],
+      "fullPins": []
+    }
+  ],
+  "connections": [
+    {
+      "from": {
+        "nodeId": "1753749060183",
+        "pinIdx": 16
+      },
+      "to": {
+        "nodeId": "1753749072036",
+        "pinIdx": 4
+      },
+      "color": "#00aaff",
+      "points": [
+        {
+          "x": 300,
+          "y": 940
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749060183",
+        "pinIdx": 1
+      },
+      "to": {
+        "nodeId": "1753749072036",
+        "pinIdx": 0
+      },
+      "color": "#ff0000",
+      "points": [
+        {
+          "x": 220,
+          "y": 840
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749060183",
+        "pinIdx": 17
+      },
+      "to": {
+        "nodeId": "1753749074900",
+        "pinIdx": 0
+      },
+      "color": "#ff0000",
+      "points": [
+        {
+          "x": 520,
+          "y": 940
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749060183",
+        "pinIdx": 4
+      },
+      "to": {
+        "nodeId": "1753749074900",
+        "pinIdx": 1
+      },
+      "color": "#00aaff",
+      "points": [
+        {
+          "x": 540,
+          "y": 840
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749060183",
+        "pinIdx": 5
+      },
+      "to": {
+        "nodeId": "1753749074900",
+        "pinIdx": 2
+      },
+      "color": "#00aaff",
+      "points": [
+        {
+          "x": 560,
+          "y": 840
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749060183",
+        "pinIdx": 6
+      },
+      "to": {
+        "nodeId": "1753749074900",
+        "pinIdx": 3
+      },
+      "color": "#00aaff",
+      "points": [
+        {
+          "x": 580,
+          "y": 840
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749060183",
+        "pinIdx": 12
+      },
+      "to": {
+        "nodeId": "1753749074900",
+        "pinIdx": 5
+      },
+      "color": "#00aaff",
+      "points": [
+        {
+          "x": 620,
+          "y": 840
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749072036",
+        "pinIdx": 1
+      },
+      "to": {
+        "nodeId": "1753749060183",
+        "pinIdx": 15
+      },
+      "color": "#000000",
+      "points": [
+        {
+          "x": 180,
+          "y": 360
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749074900",
+        "pinIdx": 1
+      },
+      "to": {
+        "nodeId": "1753749060183",
+        "pinIdx": 17
+      },
+      "color": "#00aaff",
+      "points": [
+        {
+          "x": 220,
+          "y": 480
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749072036",
+        "pinIdx": 3
+      },
+      "to": {
+        "nodeId": "1753749060183",
+        "pinIdx": 10
+      },
+      "color": "#00aaff",
+      "points": [
+        {
+          "x": 340,
+          "y": 360
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749072036",
+        "pinIdx": 4
+      },
+      "to": {
+        "nodeId": "1753749060183",
+        "pinIdx": 9
+      },
+      "color": "#00aaff",
+      "points": [
+        {
+          "x": 320,
+          "y": 360
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749072036",
+        "pinIdx": 2
+      },
+      "to": {
+        "nodeId": "1753749060183",
+        "pinIdx": 5
+      },
+      "color": "#00aaff",
+      "points": []
+    },
+    {
+      "from": {
+        "nodeId": "1753749072036",
+        "pinIdx": 1
+      },
+      "to": {
+        "nodeId": "1753749060183",
+        "pinIdx": 16
+      },
+      "color": "#000000",
+      "points": [
+        {
+          "x": 200,
+          "y": 360
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749072036",
+        "pinIdx": 0
+      },
+      "to": {
+        "nodeId": "1753749074900",
+        "pinIdx": 0
+      },
+      "color": "#ff0000",
+      "points": [
+        {
+          "x": 520,
+          "y": 360
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749074900",
+        "pinIdx": 6
+      },
+      "to": {
+        "nodeId": "1753749060183",
+        "pinIdx": 17
+      },
+      "color": "#00aaff",
+      "points": [
+        {
+          "x": 220,
+          "y": 560
+        }
+      ]
+    },
+    {
+      "from": {
+        "nodeId": "1753749074900",
+        "pinIdx": 4
+      },
+      "to": {
+        "nodeId": "1753749060183",
+        "pinIdx": 15
+      },
+      "color": "#00aaff",
+      "points": [
+        {
+          "x": 180,
+          "y": 480
+        }
+      ]
+    }
+  ],
+  "netlist": {
+    "components": [
+      {
+        "id": "1753749060183",
+        "name": "Arduino Micro",
+        "type": "Arduino Micro",
+        "variables": [],
+        "pins": [
+          "D13",
+          "3V3",
+          "AREF",
+          "A0",
+          "A1",
+          "A2",
+          "A3",
+          "A4",
+          "A5",
+          "A6",
+          "A7",
+          "A8",
+          "A9",
+          "A10",
+          "A11",
+          "D12",
+          "D11",
+          "D10",
+          "D9",
+          "D8",
+          "D7",
+          "D6",
+          "D5",
+          "D4",
+          "D3",
+          "D2",
+          "D1/TX",
+          "D0/RX",
+          "RST",
+          "GND"
+        ]
+      },
+      {
+        "id": "1753749072036",
+        "name": "Joystick Module",
+        "type": "Joystick Module",
+        "variables": [],
+        "pins": [
+          "VCC",
+          "GND",
+          "VRx",
+          "VRy",
+          "SW"
+        ]
+      },
+      {
+        "id": "1753749074900",
+        "name": "nRF24L01",
+        "type": "nRF24L01",
+        "variables": [],
+        "pins": [
+          "VCC",
+          "CE",
+          "CSN",
+          "SCK",
+          "MOSI",
+          "MISO",
+          "IRQ",
+          "GND"
+        ]
+      }
+    ],
+    "nets": [
+      {
+        "from": {
+          "componentId": "1753749060183",
+          "pin": "D11"
+        },
+        "to": {
+          "componentId": "1753749072036",
+          "pin": "SW"
+        },
+        "color": "#00aaff"
+      },
+      {
+        "from": {
+          "componentId": "1753749060183",
+          "pin": "3V3"
+        },
+        "to": {
+          "componentId": "1753749072036",
+          "pin": "VCC"
+        },
+        "color": "#ff0000"
+      },
+      {
+        "from": {
+          "componentId": "1753749060183",
+          "pin": "D10"
+        },
+        "to": {
+          "componentId": "1753749074900",
+          "pin": "VCC"
+        },
+        "color": "#ff0000"
+      },
+      {
+        "from": {
+          "componentId": "1753749060183",
+          "pin": "A1"
+        },
+        "to": {
+          "componentId": "1753749074900",
+          "pin": "CE"
+        },
+        "color": "#00aaff"
+      },
+      {
+        "from": {
+          "componentId": "1753749060183",
+          "pin": "A2"
+        },
+        "to": {
+          "componentId": "1753749074900",
+          "pin": "CSN"
+        },
+        "color": "#00aaff"
+      },
+      {
+        "from": {
+          "componentId": "1753749060183",
+          "pin": "A3"
+        },
+        "to": {
+          "componentId": "1753749074900",
+          "pin": "SCK"
+        },
+        "color": "#00aaff"
+      },
+      {
+        "from": {
+          "componentId": "1753749060183",
+          "pin": "A9"
+        },
+        "to": {
+          "componentId": "1753749074900",
+          "pin": "MISO"
+        },
+        "color": "#00aaff"
+      },
+      {
+        "from": {
+          "componentId": "1753749072036",
+          "pin": "GND"
+        },
+        "to": {
+          "componentId": "1753749060183",
+          "pin": "D12"
+        },
+        "color": "#000000"
+      },
+      {
+        "from": {
+          "componentId": "1753749074900",
+          "pin": "CE"
+        },
+        "to": {
+          "componentId": "1753749060183",
+          "pin": "D10"
+        },
+        "color": "#00aaff"
+      },
+      {
+        "from": {
+          "componentId": "1753749072036",
+          "pin": "VRy"
+        },
+        "to": {
+          "componentId": "1753749060183",
+          "pin": "A7"
+        },
+        "color": "#00aaff"
+      },
+      {
+        "from": {
+          "componentId": "1753749072036",
+          "pin": "SW"
+        },
+        "to": {
+          "componentId": "1753749060183",
+          "pin": "A6"
+        },
+        "color": "#00aaff"
+      },
+      {
+        "from": {
+          "componentId": "1753749072036",
+          "pin": "VRx"
+        },
+        "to": {
+          "componentId": "1753749060183",
+          "pin": "A2"
+        },
+        "color": "#00aaff"
+      },
+      {
+        "from": {
+          "componentId": "1753749072036",
+          "pin": "GND"
+        },
+        "to": {
+          "componentId": "1753749060183",
+          "pin": "D11"
+        },
+        "color": "#000000"
+      },
+      {
+        "from": {
+          "componentId": "1753749072036",
+          "pin": "VCC"
+        },
+        "to": {
+          "componentId": "1753749074900",
+          "pin": "VCC"
+        },
+        "color": "#ff0000"
+      },
+      {
+        "from": {
+          "componentId": "1753749074900",
+          "pin": "IRQ"
+        },
+        "to": {
+          "componentId": "1753749060183",
+          "pin": "D10"
+        },
+        "color": "#00aaff"
+      },
+      {
+        "from": {
+          "componentId": "1753749074900",
+          "pin": "MOSI"
+        },
+        "to": {
+          "componentId": "1753749060183",
+          "pin": "D12"
+        },
+        "color": "#00aaff"
+      }
+    ]
+  }
+}
